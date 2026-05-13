@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { Settings } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import SolomonIndexGauge from "@/components/profile/SolomonIndexGauge";
 import TitleBadge from "@/components/profile/TitleBadge";
@@ -99,7 +100,7 @@ export default function MyPage() {
   const { user, solomon_index, authored_posts } = profile;
 
   return (
-    <main className="max-w-lg mx-auto px-4 py-6 pb-24">
+    <main className="relative max-w-lg mx-auto px-4 py-6 pb-24">
       {isDemo && (
         <div className="mb-4 rounded-xl bg-amber-50 border border-amber-200 px-4 py-2 text-sm text-amber-700">
           데모 모드 — Supabase 연결 후 실제 프로필이 표시됩니다
@@ -108,6 +109,13 @@ export default function MyPage() {
 
       {/* 프로필 헤더 */}
       <div className="flex items-center gap-4 mb-8">
+        <Link
+          href="/settings"
+          className="absolute right-4 top-6 p-2 rounded-full text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors"
+          aria-label="설정"
+        >
+          <Settings size={20} />
+        </Link>
         <div className="w-16 h-16 rounded-full bg-indigo-100 flex items-center justify-center text-2xl font-bold text-indigo-600">
           {user.nickname[0]?.toUpperCase() ?? "?"}
         </div>

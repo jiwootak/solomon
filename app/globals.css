@@ -1,0 +1,74 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ==========================================================================
+   모두의 솔로몬 — 전역 스타일
+   - 인디고(indigo-600) 주조색 / 앰버(amber-400) 강조
+   - 모바일 우선, 하단 네비게이션 바(56px ~= h-14) 만큼 padding 예약
+   ========================================================================== */
+
+:root {
+  --color-primary: #4f46e5;       /* indigo-600 */
+  --color-primary-hover: #4338ca; /* indigo-700 */
+  --color-accent: #fbbf24;        /* amber-400 */
+  --color-accent-strong: #f59e0b; /* amber-500 */
+
+  --color-bg: #f8fafc;            /* slate-50 */
+  --color-surface: #ffffff;
+  --color-text: #0f172a;          /* slate-900 */
+  --color-text-muted: #64748b;    /* slate-500 */
+  --color-border: #e2e8f0;        /* slate-200 */
+}
+
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  background-color: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
+  /* 하단 네비게이션 영역 확보 (모든 페이지에 안전하게 적용) */
+  padding-bottom: 4rem; /* pb-16 */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ----------------------------------------------------------------------------
+   재사용 유틸리티
+---------------------------------------------------------------------------- */
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  /* 모바일 우선 컨테이너 — 최대 폭 480px, 중앙 정렬 */
+  .container-mobile {
+    margin-left: auto;
+    margin-right: auto;
+    max-width: 32rem; /* max-w-lg */
+    width: 100%;
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+
+  /* iOS safe-area 보정 (홈 인디케이터) */
+  .safe-bottom {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+}
+
+/* ----------------------------------------------------------------------------
+   포커스 가시성 (a11y)
+---------------------------------------------------------------------------- */
+:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+  border-radius: 6px;
+}

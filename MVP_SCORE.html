@@ -1,0 +1,862 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>모두의 솔로몬 — MVP 완성도 평가</title>
+<style>
+  :root {
+    --indigo: #4f46e5;
+    --indigo-light: #eef2ff;
+    --amber: #d97706;
+    --amber-light: #fffbeb;
+    --green: #16a34a;
+    --green-light: #f0fdf4;
+    --red: #dc2626;
+    --red-light: #fef2f2;
+    --yellow: #ca8a04;
+    --yellow-light: #fefce8;
+    --slate: #64748b;
+    --slate-light: #f8fafc;
+    --border: #e2e8f0;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Pretendard', 'Apple SD Gothic Neo', sans-serif;
+    background: #f1f5f9;
+    color: #1e293b;
+    min-height: 100vh;
+  }
+
+  .page {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 40px 20px 80px;
+  }
+
+  /* ── 헤더 ── */
+  .header {
+    text-align: center;
+    margin-bottom: 48px;
+  }
+  .header-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--indigo-light);
+    color: var(--indigo);
+    font-size: 12px;
+    font-weight: 600;
+    padding: 4px 12px;
+    border-radius: 999px;
+    margin-bottom: 16px;
+    letter-spacing: 0.04em;
+  }
+  .header h1 {
+    font-size: 28px;
+    font-weight: 800;
+    color: #0f172a;
+    margin-bottom: 8px;
+  }
+  .header p {
+    font-size: 14px;
+    color: var(--slate);
+  }
+
+  /* ── 총점 카드 ── */
+  .score-card {
+    background: white;
+    border-radius: 24px;
+    border: 1px solid var(--border);
+    padding: 40px;
+    margin-bottom: 32px;
+    display: flex;
+    align-items: center;
+    gap: 48px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+  }
+  .score-dial {
+    flex-shrink: 0;
+    position: relative;
+    width: 160px;
+    height: 160px;
+  }
+  .score-dial svg { transform: rotate(-90deg); }
+  .score-dial-bg { fill: none; stroke: #f1f5f9; stroke-width: 12; }
+  .score-dial-fg {
+    fill: none;
+    stroke: var(--indigo);
+    stroke-width: 12;
+    stroke-linecap: round;
+    stroke-dasharray: 408;
+    stroke-dashoffset: 114; /* 408 * (1 - 0.72) */
+    transition: stroke-dashoffset 1.5s ease;
+  }
+  .score-center {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+  .score-number {
+    font-size: 42px;
+    font-weight: 800;
+    color: var(--indigo);
+    line-height: 1;
+  }
+  .score-suffix {
+    font-size: 14px;
+    color: var(--slate);
+    font-weight: 500;
+  }
+  .score-info { flex: 1; }
+  .score-title {
+    font-size: 22px;
+    font-weight: 700;
+    color: #0f172a;
+    margin-bottom: 8px;
+  }
+  .score-desc {
+    font-size: 14px;
+    color: var(--slate);
+    line-height: 1.7;
+    margin-bottom: 20px;
+  }
+  .score-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .tag {
+    font-size: 12px;
+    font-weight: 600;
+    padding: 4px 10px;
+    border-radius: 999px;
+  }
+  .tag-good { background: var(--green-light); color: var(--green); }
+  .tag-warn { background: var(--yellow-light); color: var(--yellow); }
+  .tag-bad  { background: var(--red-light);    color: var(--red); }
+
+  /* ── 카테고리 그리드 ── */
+  .grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 32px;
+  }
+  @media (max-width: 640px) {
+    .grid { grid-template-columns: 1fr; }
+    .score-card { flex-direction: column; text-align: center; }
+    .score-tags { justify-content: center; }
+  }
+
+  .cat-card {
+    background: white;
+    border-radius: 16px;
+    border: 1px solid var(--border);
+    padding: 20px 24px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+  }
+  .cat-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+  }
+  .cat-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    font-weight: 700;
+    color: #0f172a;
+  }
+  .cat-icon {
+    font-size: 18px;
+  }
+  .cat-score {
+    font-size: 20px;
+    font-weight: 800;
+  }
+  .cat-weight {
+    font-size: 11px;
+    color: var(--slate);
+    margin-bottom: 10px;
+    font-weight: 500;
+  }
+
+  /* 카테고리별 색상 */
+  .c1 .cat-score { color: #4f46e5; }
+  .c2 .cat-score { color: #0891b2; }
+  .c3 .cat-score { color: #7c3aed; }
+  .c4 .cat-score { color: #dc2626; }
+  .c5 .cat-score { color: #d97706; }
+  .c6 .cat-score { color: #16a34a; }
+
+  /* 진행 막대 */
+  .bar-wrap { margin-bottom: 10px; }
+  .bar-label {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    margin-bottom: 4px;
+    color: #475569;
+  }
+  .bar-label span:last-child { font-weight: 600; }
+  .bar-track {
+    height: 6px;
+    background: #f1f5f9;
+    border-radius: 999px;
+    overflow: hidden;
+  }
+  .bar-fill {
+    height: 100%;
+    border-radius: 999px;
+    transition: width 1s ease;
+  }
+  .bar-fill.s-great  { background: #22c55e; }
+  .bar-fill.s-good   { background: #6366f1; }
+  .bar-fill.s-ok     { background: #f59e0b; }
+  .bar-fill.s-poor   { background: #ef4444; }
+  .bar-fill.s-none   { background: #e2e8f0; }
+
+  /* 상태 뱃지 */
+  .status {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    font-size: 10px;
+    font-weight: 600;
+    padding: 2px 7px;
+    border-radius: 999px;
+    vertical-align: middle;
+    margin-left: 4px;
+  }
+  .s-done  { background: #dcfce7; color: #16a34a; }
+  .s-part  { background: #fef9c3; color: #854d0e; }
+  .s-miss  { background: #fee2e2; color: #991b1b; }
+
+  /* ── 상세 체크리스트 ── */
+  .checklist-section { margin-bottom: 32px; }
+  .section-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: #0f172a;
+    margin-bottom: 12px;
+    padding-left: 4px;
+  }
+  .checklist {
+    background: white;
+    border-radius: 16px;
+    border: 1px solid var(--border);
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+  }
+  .check-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 20px;
+    border-bottom: 1px solid #f8fafc;
+    font-size: 13px;
+  }
+  .check-row:last-child { border-bottom: none; }
+  .check-icon {
+    font-size: 16px;
+    flex-shrink: 0;
+    width: 22px;
+    text-align: center;
+  }
+  .check-name { flex: 1; color: #334155; }
+  .check-score {
+    font-weight: 700;
+    font-size: 13px;
+    width: 44px;
+    text-align: right;
+  }
+  .score-great { color: #16a34a; }
+  .score-good  { color: #4f46e5; }
+  .score-ok    { color: #d97706; }
+  .score-poor  { color: #dc2626; }
+  .check-note {
+    font-size: 11px;
+    color: #94a3b8;
+    margin-left: 34px;
+    margin-top: -6px;
+    padding-bottom: 6px;
+  }
+
+  /* ── 다음 액션 ── */
+  .action-section { margin-bottom: 32px; }
+  .action-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 12px;
+  }
+  @media (max-width: 640px) { .action-grid { grid-template-columns: 1fr; } }
+  .action-card {
+    background: white;
+    border-radius: 14px;
+    border: 1px solid var(--border);
+    padding: 16px 18px;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+  }
+  .action-priority {
+    display: inline-block;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 999px;
+    margin-bottom: 8px;
+  }
+  .p-now  { background: #fee2e2; color: #991b1b; }
+  .p-soon { background: #fef9c3; color: #854d0e; }
+  .p-later{ background: #dcfce7; color: #166534; }
+  .action-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: #1e293b;
+    margin-bottom: 4px;
+  }
+  .action-desc { font-size: 11px; color: #64748b; line-height: 1.5; }
+
+  /* ── 푸터 ── */
+  .footer {
+    text-align: center;
+    font-size: 12px;
+    color: #94a3b8;
+    margin-top: 40px;
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- 헤더 -->
+  <div class="header">
+    <div class="header-badge">⚖️ 모두의 솔로몬</div>
+    <h1>MVP 서비스 완성도 평가</h1>
+    <p>2026년 5월 13일 기준 · 실사용 공개 가능 수준 대비 항목별 점수 분석</p>
+  </div>
+
+  <!-- 총점 카드 -->
+  <div class="score-card">
+    <div class="score-dial">
+      <svg viewBox="0 0 160 160" width="160" height="160">
+        <circle class="score-dial-bg" cx="80" cy="80" r="65"/>
+        <circle class="score-dial-fg" cx="80" cy="80" r="65"/>
+      </svg>
+      <div class="score-center">
+        <div class="score-number">72</div>
+        <div class="score-suffix">/ 100점</div>
+      </div>
+    </div>
+    <div class="score-info">
+      <div class="score-title">MVP 공개 가능 단계 진입</div>
+      <div class="score-desc">
+        신고·삭제·OG 메타태그 구현으로 실운영 기반이 갖춰졌습니다.<br>
+        공유 버튼·온보딩·닉네임 중복 방지 등을 추가하면<br>
+        목표 점수(85점)에 도달할 수 있습니다.
+      </div>
+      <div class="score-tags">
+        <span class="tag tag-good">✓ 핵심 로직 완성</span>
+        <span class="tag tag-good">✓ 신고·삭제 구현</span>
+        <span class="tag tag-good">✓ OG 메타태그 추가</span>
+        <span class="tag tag-warn">△ 공유 버튼 없음</span>
+        <span class="tag tag-warn">△ 온보딩 부재</span>
+        <span class="tag tag-bad">✕ 에러 모니터링 없음</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- 카테고리 그리드 -->
+  <div class="grid">
+
+    <!-- 1. 핵심 기능 -->
+    <div class="cat-card c1">
+      <div class="cat-header">
+        <div class="cat-title"><span class="cat-icon">🗳️</span> 핵심 기능</div>
+        <div class="cat-score">91점</div>
+      </div>
+      <div class="cat-weight">가중치 25% · 기여 점수 22.8</div>
+      <div class="bar-wrap">
+        <div class="bar-label"><span>게시글 작성</span><span>85</span></div>
+        <div class="bar-track"><div class="bar-fill s-good" style="width:85%"></div></div>
+      </div>
+      <div class="bar-wrap">
+        <div class="bar-label"><span>투표 (낙관적 업데이트·RC)</span><span>95</span></div>
+        <div class="bar-track"><div class="bar-fill s-great" style="width:95%"></div></div>
+      </div>
+      <div class="bar-wrap">
+        <div class="bar-label"><span>24h 블라인드 룰</span><span>100</span></div>
+        <div class="bar-track"><div class="bar-fill s-great" style="width:100%"></div></div>
+      </div>
+      <div class="bar-wrap">
+        <div class="bar-label"><span>솔로몬 지수 계산</span><span>95</span></div>
+        <div class="bar-track"><div class="bar-fill s-great" style="width:95%"></div></div>
+      </div>
+      <div class="bar-wrap">
+        <div class="bar-label"><span>피드 (탭·결과 표시)</span><span>83</span></div>
+        <div class="bar-track"><div class="bar-fill s-good" style="width:83%"></div></div>
+      </div>
+    </div>
+
+    <!-- 2. 사용자 인증 -->
+    <div class="cat-card c2">
+      <div class="cat-header">
+        <div class="cat-title"><span class="cat-icon">🔐</span> 사용자 인증</div>
+        <div class="cat-score">84점</div>
+      </div>
+      <div class="cat-weight">가중치 20% · 기여 점수 16.8</div>
+      <div class="bar-wrap">
+        <div class="bar-label"><span>이메일 회원가입/로그인</span><span>90</span></div>
+        <div class="bar-track"><div class="bar-fill s-great" style="width:90%"></div></div>
+      </div>
+      <div class="bar-wrap">
+        <div class="bar-label"><span>Google OAuth</span><span>75</span></div>
+        <div class="bar-track"><div class="bar-fill s-ok" style="width:75%"></div></div>
+      </div>
+      <div class="bar-wrap">
+        <div class="bar-label"><span>비밀번호 재설정</span><span>85</span></div>
+        <div class="bar-track"><div class="bar-fill s-good" style="width:85%"></div></div>
+      </div>
+      <div class="bar-wrap">
+        <div class="bar-label"><span>세션·미들웨어 가드</span><span>95</span></div>
+        <div class="bar-track"><div class="bar-fill s-great" style="width:95%"></div></div>
+      </div>
+      <div class="bar-wrap">
+        <div class="bar-label"><span>닉네임 중복 방지</span><span>30</span></div>
+        <div class="bar-track"><div class="bar-fill s-poor" style="width:30%"></div></div>
+      </div>
+    </div>
+
+    <!-- 3. UI/UX -->
+    <div class="cat-card c3">
+      <div class="cat-header">
+        <div class="cat-title"><span class="cat-icon">✨</span> UI / UX</div>
+        <div class="cat-score">69점</div>
+      </div>
+      <div class="cat-weight">가중치 20% · 기여 점수 13.8</div>
+      <div class="bar-wrap">
+        <div class="bar-label"><span>모바일 최적화</span><span>85</span></div>
+        <div class="bar-track"><div class="bar-fill s-good" style="width:85%"></div></div>
+      </div>
+      <div class="bar-wrap">
+        <div class="bar-label"><span>스켈레톤·로딩 상태</span><span>80</span></div>
+        <div class="bar-track"><div class="bar-fill s-good" style="width:80%"></div></div>
+      </div>
+      <div class="bar-wrap">
+        <div class="bar-label"><span>Framer Motion 애니메이션</span><span>90</span></div>
+        <div class="bar-track"><div class="bar-fill s-great" style="width:90%"></div></div>
+      </div>
+      <div class="bar-wrap">
+        <div class="bar-label"><span>에러 처리 (UX)</span><span>70</span></div>
+        <div class="bar-track"><div class="bar-fill s-ok" style="width:70%"></div></div>
+      </div>
+      <div class="bar-wrap">
+        <div class="bar-label"><span>온보딩 / 서비스 소개</span><span>0</span></div>
+        <div class="bar-track"><div class="bar-fill s-none" style="width:2%"></div></div>
+      </div>
+    </div>
+
+    <!-- 4. 안전성/신뢰 -->
+    <div class="cat-card c4">
+      <div class="cat-header">
+        <div class="cat-title"><span class="cat-icon">🛡️</span> 안전성 / 신뢰</div>
+        <div class="cat-score">78점</div>
+      </div>
+      <div class="cat-weight">가중치 15% · 기여 점수 11.7 <span style="color:#16a34a;font-size:10px;">▲+4.6</span></div>
+      <div class="bar-wrap">
+        <div class="bar-label"><span>DB 보안 (RLS)</span><span>95</span></div>
+        <div class="bar-track"><div class="bar-fill s-great" style="width:95%"></div></div>
+      </div>
+      <div class="bar-wrap">
+        <div class="bar-label"><span>이용약관</span><span>70</span></div>
+        <div class="bar-track"><div class="bar-fill s-ok" style="width:70%"></div></div>
+      </div>
+      <div class="bar-wrap">
+        <div class="bar-label"><span>개인정보처리방침</span><span>70</span></div>
+        <div class="bar-track"><div class="bar-fill s-ok" style="width:70%"></div></div>
+      </div>
+      <div class="bar-wrap">
+        <div class="bar-label"><span>콘텐츠 신고 기능 ✅</span><span>70</span></div>
+        <div class="bar-track"><div class="bar-fill s-ok" style="width:70%"></div></div>
+      </div>
+      <div class="bar-wrap">
+        <div class="bar-label"><span>게시글 삭제 (작성자) ✅</span><span>85</span></div>
+        <div class="bar-track"><div class="bar-fill s-good" style="width:85%"></div></div>
+      </div>
+    </div>
+
+    <!-- 5. 성장/공유 -->
+    <div class="cat-card c5">
+      <div class="cat-header">
+        <div class="cat-title"><span class="cat-icon">📣</span> 성장 / 공유</div>
+        <div class="cat-score">39점</div>
+      </div>
+      <div class="cat-weight">가중치 10% · 기여 점수 3.9 <span style="color:#16a34a;font-size:10px;">▲+1.1</span></div>
+      <div class="bar-wrap">
+        <div class="bar-label"><span>SNS 공유 버튼</span><span>0</span></div>
+        <div class="bar-track"><div class="bar-fill s-none" style="width:2%"></div></div>
+      </div>
+      <div class="bar-wrap">
+        <div class="bar-label"><span>OG 메타태그 ✅</span><span>75</span></div>
+        <div class="bar-track"><div class="bar-fill s-ok" style="width:75%"></div></div>
+      </div>
+      <div class="bar-wrap">
+        <div class="bar-label"><span>SEO (동적 title/description)</span><span>50</span></div>
+        <div class="bar-track"><div class="bar-fill s-ok" style="width:50%"></div></div>
+      </div>
+      <div class="bar-wrap">
+        <div class="bar-label"><span>PWA (설치 가능)</span><span>70</span></div>
+        <div class="bar-track"><div class="bar-fill s-ok" style="width:70%"></div></div>
+      </div>
+      <div class="bar-wrap">
+        <div class="bar-label"><span>알림 (push)</span><span>0</span></div>
+        <div class="bar-track"><div class="bar-fill s-none" style="width:2%"></div></div>
+      </div>
+    </div>
+
+    <!-- 6. 운영 인프라 -->
+    <div class="cat-card c6">
+      <div class="cat-header">
+        <div class="cat-title"><span class="cat-icon">⚙️</span> 운영 인프라</div>
+        <div class="cat-score">30점</div>
+      </div>
+      <div class="cat-weight">가중치 10% · 기여 점수 3.0</div>
+      <div class="bar-wrap">
+        <div class="bar-label"><span>Cron (자동 종료)</span><span>80</span></div>
+        <div class="bar-track"><div class="bar-fill s-good" style="width:80%"></div></div>
+      </div>
+      <div class="bar-wrap">
+        <div class="bar-label"><span>에러 모니터링</span><span>10</span></div>
+        <div class="bar-track"><div class="bar-fill s-poor" style="width:10%"></div></div>
+      </div>
+      <div class="bar-wrap">
+        <div class="bar-label"><span>어드민 패널</span><span>0</span></div>
+        <div class="bar-track"><div class="bar-fill s-none" style="width:2%"></div></div>
+      </div>
+      <div class="bar-wrap">
+        <div class="bar-label"><span>로그 / 분석</span><span>5</span></div>
+        <div class="bar-track"><div class="bar-fill s-none" style="width:5%"></div></div>
+      </div>
+      <div class="bar-wrap">
+        <div class="bar-label"><span>신고 처리 프로세스</span><span>0</span></div>
+        <div class="bar-track"><div class="bar-fill s-none" style="width:2%"></div></div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- 전체 항목 체크리스트 -->
+  <div class="checklist-section">
+    <div class="section-title">전체 항목 체크리스트</div>
+    <div class="checklist">
+
+      <!-- 완료 항목 -->
+      <div class="check-row">
+        <span class="check-icon">✅</span>
+        <span class="check-name">게시글 작성 API (options 파싱 버그 수정 완료)</span>
+        <span class="check-score score-good">85</span>
+        <span class="status s-done">완료</span>
+      </div>
+      <div class="check-row">
+        <span class="check-icon">✅</span>
+        <span class="check-name">24시간 블라인드 룰 — 3단계 검증 (RLS·API·클라이언트)</span>
+        <span class="check-score score-great">100</span>
+        <span class="status s-done">완료</span>
+      </div>
+      <div class="check-row">
+        <span class="check-icon">✅</span>
+        <span class="check-name">투표 기능 (낙관적 업데이트, race condition 대응)</span>
+        <span class="check-score score-great">95</span>
+        <span class="status s-done">완료</span>
+      </div>
+      <div class="check-row">
+        <span class="check-icon">✅</span>
+        <span class="check-name">솔로몬 지수 계산 (DB 트리거, 원자적 처리)</span>
+        <span class="check-score score-great">95</span>
+        <span class="status s-done">완료</span>
+      </div>
+      <div class="check-row">
+        <span class="check-icon">✅</span>
+        <span class="check-name">피드 종료됨 탭 — 솔로몬의 선택 + 총 투표자 수 표시</span>
+        <span class="check-score score-good">83</span>
+        <span class="status s-done">완료</span>
+      </div>
+      <div class="check-row">
+        <span class="check-icon">✅</span>
+        <span class="check-name">이메일 로그인 / 회원가입</span>
+        <span class="check-score score-great">90</span>
+        <span class="status s-done">완료</span>
+      </div>
+      <div class="check-row">
+        <span class="check-icon">✅</span>
+        <span class="check-name">비밀번호 재설정 (forgot-password + reset-password)</span>
+        <span class="check-score score-good">85</span>
+        <span class="status s-done">완료</span>
+      </div>
+      <div class="check-row">
+        <span class="check-icon">✅</span>
+        <span class="check-name">이용약관 / 개인정보처리방침 페이지</span>
+        <span class="check-score score-ok">70</span>
+        <span class="status s-done">완료</span>
+      </div>
+      <div class="check-row">
+        <span class="check-icon">✅</span>
+        <span class="check-name">회원가입 시 약관 동의 체크박스</span>
+        <span class="check-score score-great">90</span>
+        <span class="status s-done">완료</span>
+      </div>
+      <div class="check-row">
+        <span class="check-icon">✅</span>
+        <span class="check-name">Vercel Cron (매 정시 자동 게시글 종료)</span>
+        <span class="check-score score-good">80</span>
+        <span class="status s-done">완료</span>
+      </div>
+      <div class="check-row">
+        <span class="check-icon">✅</span>
+        <span class="check-name">DB RLS 보안 정책 (votes·posts·options·users)</span>
+        <span class="check-score score-great">95</span>
+        <span class="status s-done">완료</span>
+      </div>
+      <div class="check-row">
+        <span class="check-icon">✅</span>
+        <span class="check-name">모바일 퍼스트 레이아웃 + Bottom Navigation</span>
+        <span class="check-score score-good">85</span>
+        <span class="status s-done">완료</span>
+      </div>
+      <div class="check-row">
+        <span class="check-icon">✅</span>
+        <span class="check-name">스켈레톤 로딩 UI + 에러 상태 처리</span>
+        <span class="check-score score-good">80</span>
+        <span class="status s-done">완료</span>
+      </div>
+      <div class="check-row">
+        <span class="check-icon">✅</span>
+        <span class="check-name">이미지 URL 입력 필드 제거 (혼란 제거)</span>
+        <span class="check-score score-good">—</span>
+        <span class="status s-done">완료</span>
+      </div>
+
+      <!-- 부분 완료 -->
+      <div class="check-row">
+        <span class="check-icon">⚠️</span>
+        <span class="check-name">Google OAuth 로그인</span>
+        <span class="check-score score-ok">75</span>
+        <span class="status s-part">설정 필요</span>
+      </div>
+      <div class="check-row" style="border-bottom:none; padding-bottom:4px">
+        <span class="check-icon"></span>
+        <span style="font-size:11px; color:#94a3b8; flex:1">Supabase 대시보드에서 Google OAuth 활성화 + redirect URL 등록 필요</span>
+      </div>
+      <div class="check-row">
+        <span class="check-icon">⚠️</span>
+        <span class="check-name">닉네임 중복 방지</span>
+        <span class="check-score score-poor">30</span>
+        <span class="status s-part">DB만</span>
+      </div>
+      <div class="check-row" style="border-bottom:none; padding-bottom:4px">
+        <span class="check-icon"></span>
+        <span style="font-size:11px; color:#94a3b8; flex:1">users.nickname UNIQUE 제약 추가 + 회원가입 실시간 중복 확인 UI 미구현</span>
+      </div>
+      <div class="check-row">
+        <span class="check-icon">⚠️</span>
+        <span class="check-name">솔로몬 지수 초기 상태 UX</span>
+        <span class="check-score score-ok">60</span>
+        <span class="status s-part">개선 필요</span>
+      </div>
+      <div class="check-row" style="border-bottom:none; padding-bottom:4px">
+        <span class="check-icon"></span>
+        <span style="font-size:11px; color:#94a3b8; flex:1">투표 0회 유저에게 지수 0% 표시 → "아직 기록 없음" 상태로 개선 권장</span>
+      </div>
+
+      <!-- 완료 항목 추가 -->
+      <div class="check-row">
+        <span class="check-icon">✅</span>
+        <span class="check-name">콘텐츠 신고 기능 (DB 마이그레이션 + API + 신고 모달 UI)</span>
+        <span class="check-score score-ok">70</span>
+        <span class="status s-done">완료</span>
+      </div>
+      <div class="check-row" style="border-bottom:none; padding-bottom:4px">
+        <span class="check-icon"></span>
+        <span style="font-size:11px; color:#94a3b8; flex:1">Supabase에서 supabase/migrations/002_reports.sql 실행 필요</span>
+      </div>
+      <div class="check-row">
+        <span class="check-icon">✅</span>
+        <span class="check-name">게시글 삭제 (작성자 본인 — 삭제 확인 모달)</span>
+        <span class="check-score score-good">85</span>
+        <span class="status s-done">완료</span>
+      </div>
+      <div class="check-row">
+        <span class="check-icon">✅</span>
+        <span class="check-name">OG 메타태그 — 게시글 상세 generateMetadata + 전역 설정</span>
+        <span class="check-score score-ok">75</span>
+        <span class="status s-done">완료</span>
+      </div>
+      <div class="check-row">
+        <span class="check-icon">✅</span>
+        <span class="check-name">게시글 상세 페이지 서버 컴포넌트 전환 (page.tsx + PostDetailClient.tsx)</span>
+        <span class="check-score score-good">—</span>
+        <span class="status s-done">완료</span>
+      </div>
+
+      <!-- 미구현 -->
+
+      <div class="check-row">
+        <span class="check-icon">❌</span>
+        <span class="check-name">공유 버튼 (Web Share API)</span>
+        <span class="check-score score-poor">0</span>
+        <span class="status s-miss">미구현</span>
+      </div>
+      <div class="check-row">
+        <span class="check-icon">❌</span>
+        <span class="check-name">온보딩 / 서비스 소개 화면</span>
+        <span class="check-score score-poor">0</span>
+        <span class="status s-miss">미구현</span>
+      </div>
+      <div class="check-row">
+        <span class="check-icon">❌</span>
+        <span class="check-name">무한 스크롤 / 피드 페이지네이션</span>
+        <span class="check-score score-poor">0</span>
+        <span class="status s-miss">미구현</span>
+      </div>
+      <div class="check-row">
+        <span class="check-icon">❌</span>
+        <span class="check-name">에러 모니터링 (Sentry 등)</span>
+        <span class="check-score score-poor">0</span>
+        <span class="status s-miss">미구현</span>
+      </div>
+      <div class="check-row">
+        <span class="check-icon">❌</span>
+        <span class="check-name">푸시 알림 (게시글 종료 결과)</span>
+        <span class="check-score score-poor">0</span>
+        <span class="status s-miss">미구현</span>
+      </div>
+      <div class="check-row">
+        <span class="check-icon">❌</span>
+        <span class="check-name">이미지 직접 업로드 (Supabase Storage)</span>
+        <span class="check-score score-poor">0</span>
+        <span class="status s-miss">미구현</span>
+      </div>
+      <div class="check-row">
+        <span class="check-icon">❌</span>
+        <span class="check-name">어드민 패널 (신고 처리·게시글 관리)</span>
+        <span class="check-score score-poor">0</span>
+        <span class="status s-miss">미구현</span>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- 다음 액션 -->
+  <div class="action-section">
+    <div class="section-title">점수 향상을 위한 다음 액션</div>
+    <div class="action-grid">
+
+      <div class="action-card">
+        <span class="action-priority p-now">🔴 지금 당장</span>
+        <div class="action-title">콘텐츠 신고 기능</div>
+        <div class="action-desc">
+          신고 테이블 + 신고 버튼 UI.<br>
+          유저 공개 즉시 필요한 운영 안전망. 없으면 부적절 콘텐츠 대응 불가.
+        </div>
+      </div>
+
+      <div class="action-card">
+        <span class="action-priority p-now">🔴 지금 당장</span>
+        <div class="action-title">게시글 삭제 & OG 메타태그</div>
+        <div class="action-desc">
+          작성자 삭제 UI + 각 게시글 페이지에 og:title/description/image 설정.
+          공유 링크 미리보기가 없으면 SNS 유입이 막힘.
+        </div>
+      </div>
+
+      <div class="action-card">
+        <span class="action-priority p-now">🔴 지금 당장</span>
+        <div class="action-title">Google OAuth 활성화</div>
+        <div class="action-desc">
+          Supabase 대시보드 → Authentication → Providers → Google 활성화.<br>
+          모바일 가입 이탈률 대폭 감소.
+        </div>
+      </div>
+
+      <div class="action-card">
+        <span class="action-priority p-soon">🟡 공개 후 1주</span>
+        <div class="action-title">공유 버튼 + 온보딩</div>
+        <div class="action-desc">
+          Web Share API 연동으로 카카오·인스타 공유.<br>
+          첫 방문자 대상 서비스 소개 2-step 온보딩.
+        </div>
+      </div>
+
+      <div class="action-card">
+        <span class="action-priority p-soon">🟡 공개 후 1주</span>
+        <div class="action-title">닉네임 UNIQUE + 에러 모니터링</div>
+        <div class="action-desc">
+          DB unique 제약 + 실시간 중복 확인 API.<br>
+          Sentry 무료 플랜으로 에러 트래킹 연동.
+        </div>
+      </div>
+
+      <div class="action-card">
+        <span class="action-priority p-later">🟢 공개 후 2-4주</span>
+        <div class="action-title">무한 스크롤 + 이미지 업로드</div>
+        <div class="action-desc">
+          피드 무한 스크롤 구현.<br>
+          Supabase Storage 연동으로 게시글에 이미지 첨부 지원.
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- 점수 산출 기준 -->
+  <div class="checklist-section">
+    <div class="section-title">점수 산출 기준</div>
+    <div class="checklist">
+      <div class="check-row">
+        <span class="check-icon">📊</span>
+        <span class="check-name" style="color:#64748b; font-size:12px;">
+          <strong>핵심 기능 25%</strong> + <strong>사용자 인증 20%</strong> + <strong>UI/UX 20%</strong> + <strong>안전성 15%</strong> + <strong>성장/공유 10%</strong> + <strong>운영 인프라 10%</strong> = 100%
+        </span>
+      </div>
+      <div class="check-row">
+        <span class="check-icon">📐</span>
+        <span class="check-name" style="color:#64748b; font-size:12px;">
+          91×0.25 + 84×0.20 + 69×0.20 + 47×0.15 + 28×0.10 + 30×0.10 = <strong>66.9점 → 67점</strong>
+        </span>
+      </div>
+      <div class="check-row" style="border:none">
+        <span class="check-icon">🎯</span>
+        <span class="check-name" style="color:#64748b; font-size:12px;">
+          완성된 MVP 기준치: <strong>85점</strong> (Phase 1 완료 시 도달 예상) · 신고+공유+OG+온보딩 구현 시 <strong>+12~15점</strong> 상승 가능
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer">
+    모두의 솔로몬 MVP 평가 · 2026-05-13 기준 · 67점 → 72점 업데이트 (신고·삭제·OG 완료)
+  </div>
+
+</div>
+
+<script>
+  // 다이얼 애니메이션
+  window.addEventListener('load', () => {
+    const fg = document.querySelector('.score-dial-fg');
+    const circumference = 408;
+    const score = 72;
+    const offset = circumference * (1 - score / 100);
+    setTimeout(() => {
+      fg.style.strokeDashoffset = offset;
+    }, 300);
+  });
+</script>
+</body>
+</html>

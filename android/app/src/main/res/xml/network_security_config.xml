@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<network-security-config>
+    <domain-config cleartextTrafficPermitted="false">
+        <!-- Vercel 배포 도메인 — 프로덕션 -->
+        <domain includeSubdomains="true">vercel.app</domain>
+        <!-- Supabase -->
+        <domain includeSubdomains="true">supabase.co</domain>
+    </domain-config>
+</network-security-config>

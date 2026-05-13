@@ -1,0 +1,39 @@
+{
+  "name": "모두의 솔로몬",
+  "short_name": "솔로몬",
+  "description": "24시간 블라인드 투표 커뮤니티",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#f8fafc",
+  "theme_color": "#4F46E5",
+  "lang": "ko",
+  "categories": ["social", "entertainment"],
+  "icons": [
+    {
+      "src": "/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-512-maskable.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "투표 올리기",
+      "url": "/post/create",
+      "description": "새 투표 게시글 작성"
+    }
+  ]
+}

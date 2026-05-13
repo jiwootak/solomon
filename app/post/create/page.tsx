@@ -13,7 +13,6 @@
  *   4) 클라이언트 검증: content 필수, 옵션 2개 이상 + 모두 비어있지 않음 + 중복 금지
  */
 import { useEffect, useMemo, useState } from "react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
 import { ArrowLeft, Plus, Trash2 } from "lucide-react";
@@ -157,13 +156,13 @@ export default function PostCreatePage() {
     <div className="container-mobile py-4">
       {/* 헤더 */}
       <header className="mb-4 flex items-center justify-between">
-        <Link
-          href="/"
-          aria-label="피드로 돌아가기"
+        <button
+          onClick={() => router.back()}
+          aria-label="뒤로 가기"
           className="flex h-9 w-9 items-center justify-center rounded-full text-slate-600 hover:bg-slate-100"
         >
           <ArrowLeft className="h-5 w-5" />
-        </Link>
+        </button>
         <h1 className="text-base font-semibold text-slate-900">새 게시글</h1>
         <div className="w-9" aria-hidden />
       </header>

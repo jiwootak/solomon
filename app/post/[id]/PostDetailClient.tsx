@@ -131,6 +131,7 @@ function PostDetailView({
   isVoting: boolean;
   onDeleted: () => void;
 }) {
+  const router = useRouter();
   const expired = computeIsExpired(post);
   const [pendingOptionId, setPendingOptionId] = useState<string | null>(null);
   const [showReportModal, setShowReportModal] = useState(false);
@@ -187,13 +188,13 @@ function PostDetailView({
       {/* 헤더 */}
       <header className="mb-4 flex items-center justify-between gap-2">
         <div className="flex items-center gap-2">
-          <Link
-            href="/"
-            aria-label="피드로 돌아가기"
+          <button
+            onClick={() => router.back()}
+            aria-label="뒤로 가기"
             className="flex h-9 w-9 items-center justify-center rounded-full text-slate-600 hover:bg-slate-100"
           >
             <ArrowLeft className="h-5 w-5" />
-          </Link>
+          </button>
           <h1 className="text-base font-semibold text-slate-900">
             {expired ? "결과 보기" : "투표하기"}
           </h1>

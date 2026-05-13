@@ -1,15 +1,17 @@
-import Link from "next/link";
+"use client";
 
-export const metadata = {
-  title: "개인정보처리방침 — 모두의 솔로몬",
-};
+import { useRouter } from "next/navigation";
 
 export default function PrivacyPage() {
+  const router = useRouter();
   return (
     <main className="container-mobile py-8 pb-24">
-      <Link href="/" className="mb-6 inline-flex items-center gap-1 text-sm text-slate-500 hover:text-slate-700">
-        ← 홈으로
-      </Link>
+      <button
+        onClick={() => router.back()}
+        className="mb-6 inline-flex items-center gap-1 text-sm text-slate-500 hover:text-slate-700"
+      >
+        ← 뒤로가기
+      </button>
 
       <h1 className="mb-2 text-2xl font-bold text-slate-900">개인정보처리방침</h1>
       <p className="mb-8 text-xs text-slate-400">시행일: 2026년 5월 13일 · 최종 개정: 2026년 5월 13일</p>

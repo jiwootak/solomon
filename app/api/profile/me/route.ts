@@ -11,35 +11,34 @@ export async function GET() {
     return NextResponse.json({ error: "인증이 필요합니다." }, { status: 401 });
   }
 
-  const { data: user, error: userError } = await supabase
-    .from("users")
-    .select("*")
-    .eq("id", authUser.id)
-    .maybeSingle();
+  // 3개 쿼리 병렬 실행
+  const [
+    { data: user, error: userError },
+    { data: authored_posts },
+    { data: votes },
+  ] = await Promise.all([
+    supabase.from("users").select("*").eq("id", authUser.id).maybeSingle(),
+    supabase
+      .from("posts")
+      .select("id, content, status, expires_at, created_at")
+      .eq("user_id", authUser.id)
+      .order("created_at", { ascending: false })
+      .limit(10),
+    supabase
+      .from("votes")
+      .select("post_id, option_id, posts(id, content, status, expires_at, created_at)")
+      .eq("user_id", authUser.id)
+      .order("created_at", { ascending: false })
+      .limit(10),
+  ]);
 
   if (userError || !user) {
     return NextResponse.json({ error: "프로필을 찾을 수 없습니다." }, { status: 404 });
   }
 
-  const solomon_index = getSolomonData(user);
-
-  const { data: authored_posts } = await supabase
-    .from("posts")
-    .select("id, content, status, expires_at, created_at")
-    .eq("user_id", authUser.id)
-    .order("created_at", { ascending: false })
-    .limit(10);
-
-  const { data: votes } = await supabase
-    .from("votes")
-    .select("post_id, option_id, posts(id, content, status, expires_at, created_at)")
-    .eq("user_id", authUser.id)
-    .order("created_at", { ascending: false })
-    .limit(10);
-
   return NextResponse.json({
     user,
-    solomon_index,
+    solomon_index: getSolomonData(user),
     authored_posts: authored_posts ?? [],
     voted_posts: votes ?? [],
   });

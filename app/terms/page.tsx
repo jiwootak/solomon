@@ -17,7 +17,7 @@ export default function TermsPage() {
         <section>
           <h2 className="mb-2 font-semibold text-slate-900">제1조 (목적)</h2>
           <p>
-            본 약관은 모두의 솔로몬(이하 "서비스")이 제공하는 24시간 블라인드 투표 커뮤니티 서비스의 이용에 관한 조건 및 절차, 기타 필요한 사항을 규정함을 목적으로 합니다.
+            본 약관은 모두의 솔로몬(이하 &ldquo;서비스&rdquo;)이 제공하는 24시간 블라인드 투표 커뮤니티 서비스의 이용에 관한 조건 및 절차, 기타 필요한 사항을 규정함을 목적으로 합니다.
           </p>
         </section>
 
